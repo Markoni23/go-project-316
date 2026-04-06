@@ -5,5 +5,5 @@ import (
 )
 
 func ReportFormat(report Report) ([]byte, error) {
-	return json.Marshal(report)
+	return json.MarshalIndent(report, "", "    ")
 }

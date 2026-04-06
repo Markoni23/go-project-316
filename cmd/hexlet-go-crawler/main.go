@@ -3,6 +3,7 @@ package main
 import (
 	"code/internal/crawler"
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -49,8 +50,12 @@ func main() {
 				Url:     c.StringArg("url"),
 			}
 
-			return crawler.Analyze(ctx, options)
-
+			report, err := crawler.Analyze(ctx, options)
+			if err != nil {
+				return err
+			}
+			fmt.Println(report)
+			return nil
 		},
 	}
 

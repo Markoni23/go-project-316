@@ -2,33 +2,30 @@ package crawler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 )
 
-func Analyze(ctx context.Context, options Options) error {
+func Analyze(ctx context.Context, options Options) (string, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", options.Url, nil)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	resp, err := options.Client.Do(req)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	rep, err := CreateReport(ctx, options.Url, options.Depths, resp)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	formatted, err := ReportFormat(rep)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	fmt.Println(string(formatted))
-
-	return nil
+	return string(formatted), nil
 }
