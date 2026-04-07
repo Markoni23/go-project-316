@@ -3,6 +3,7 @@ package crawler
 import (
 	"context"
 	"net/http"
+	"time"
 )
 
 func Analyze(ctx context.Context, options Options) (string, error) {
@@ -17,10 +18,20 @@ func Analyze(ctx context.Context, options Options) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	rep, err := CreateReport(ctx, options.Url, options.Depths, resp)
+	rep := Report{
+		RootUrl:     options.Url,
+		Depth:       options.Depth,
+		GeneratedAt: time.Now(),
+		Pages:       make([]Page, 0),
+	}
+
+	page, err := CreatePage(ctx, options)
+
 	if err != nil {
 		return "", err
 	}
+
+	rep.Pages = append(rep.Pages, page)
 
 	formatted, err := ReportFormat(rep)
 	if err != nil {

@@ -44,7 +44,7 @@ func main() {
 		Action: func(ctx context.Context, c *cli.Command) error {
 			options := crawler.Options{
 				Client:  &http.Client{},
-				Depths:  c.Int("depth"),
+				Depth:   c.Int("depth"),
 				Retries: c.Int("retries"),
 				Delay:   c.Duration("delay"),
 				Url:     c.StringArg("url"),

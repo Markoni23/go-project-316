@@ -8,7 +8,7 @@ import (
 type Options struct {
 	Client  *http.Client
 	Retries int
-	Depths  int
+	Depth   int
 	Delay   time.Duration
 	Url     string
 }
