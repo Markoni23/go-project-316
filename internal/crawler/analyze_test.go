@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"code/internal/crawler/models"
 	"context"
 	"encoding/json"
 	"errors"
@@ -20,10 +21,10 @@ func TestAnalyze_Success(t *testing.T) {
 	defer server.Close()
 
 	// Create options
-	options := Options{
+	options := models.Options{
 		Client:  &http.Client{Timeout: 10 * time.Second},
 		Retries: 3,
-		Depths:  2,
+		Depth:   2,
 		Delay:   1 * time.Second,
 		Url:     server.URL,
 	}
@@ -55,10 +56,10 @@ func TestAnalyze_Success(t *testing.T) {
 }
 
 func TestAnalyze_InvalidURL(t *testing.T) {
-	options := Options{
+	options := models.Options{
 		Client:  &http.Client{},
 		Retries: 3,
-		Depths:  2,
+		Depth:   2,
 		Delay:   1 * time.Second,
 		Url:     "://invalid-url",
 	}
@@ -80,10 +81,10 @@ func TestAnalyze_RequestError(t *testing.T) {
 	}))
 	server.Close()
 
-	options := Options{
+	options := models.Options{
 		Client:  &http.Client{Timeout: 1 * time.Second},
 		Retries: 3,
-		Depths:  2,
+		Depth:   2,
 		Delay:   1 * time.Second,
 		Url:     server.URL,
 	}
@@ -105,10 +106,10 @@ func TestAnalyze_ContextCancellation(t *testing.T) {
 	}))
 	defer server.Close()
 
-	options := Options{
+	options := models.Options{
 		Client:  &http.Client{Timeout: 10 * time.Second},
 		Retries: 3,
-		Depths:  2,
+		Depth:   2,
 		Delay:   1 * time.Second,
 		Url:     server.URL,
 	}
@@ -133,10 +134,10 @@ func TestAnalyze_ContextTimeout(t *testing.T) {
 	}))
 	defer server.Close()
 
-	options := Options{
+	options := models.Options{
 		Client:  &http.Client{Timeout: 10 * time.Second},
 		Retries: 3,
-		Depths:  2,
+		Depth:   2,
 		Delay:   1 * time.Second,
 		Url:     server.URL,
 	}
@@ -161,10 +162,10 @@ func TestAnalyze_HTTPErrorStatus(t *testing.T) {
 	}))
 	defer server.Close()
 
-	options := Options{
+	options := models.Options{
 		Client:  &http.Client{Timeout: 10 * time.Second},
 		Retries: 3,
-		Depths:  2,
+		Depth:   2,
 		Delay:   1 * time.Second,
 		Url:     server.URL,
 	}
@@ -189,15 +190,15 @@ func TestAnalyze_HTTPErrorStatus(t *testing.T) {
 	}
 }
 
-func TestAnalyze_WithDifferentDepths(t *testing.T) {
+func TestAnalyze_WithDifferentDepth(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer server.Close()
 
 	testCases := []struct {
-		name   string
-		depths int
+		name  string
+		Depth int
 	}{
 		{"Depth 0", 0},
 		{"Depth 1", 1},
@@ -207,28 +208,28 @@ func TestAnalyze_WithDifferentDepths(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			options := Options{
+			options := models.Options{
 				Client:  &http.Client{Timeout: 10 * time.Second},
 				Retries: 3,
-				Depths:  tc.depths,
+				Depth:   tc.Depth,
 				Delay:   1 * time.Second,
 				Url:     server.URL,
 			}
 
 			reportJSON, err := Analyze(context.Background(), options)
 			if err != nil {
-				t.Errorf("Expected no error for depth %d, got: %v", tc.depths, err)
+				t.Errorf("Expected no error for depth %d, got: %v", tc.Depth, err)
 			}
 
 			if reportJSON == "" {
-				t.Errorf("Expected non-empty report for depth %d", tc.depths)
+				t.Errorf("Expected non-empty report for depth %d", tc.Depth)
 			}
 
 			// Verify depth in report
 			var report Report
 			if err := json.Unmarshal([]byte(reportJSON), &report); err == nil {
-				if report.Depth != tc.depths {
-					t.Errorf("Expected report depth %d, got %d", tc.depths, report.Depth)
+				if report.Depth != tc.Depth {
+					t.Errorf("Expected report depth %d, got %d", tc.Depth, report.Depth)
 				}
 			}
 		})
@@ -242,10 +243,10 @@ func TestAnalyze_ClientTimeout(t *testing.T) {
 	}))
 	defer server.Close()
 
-	options := Options{
+	options := models.Options{
 		Client:  &http.Client{Timeout: 1 * time.Second}, // Short timeout
 		Retries: 3,
-		Depths:  2,
+		Depth:   2,
 		Delay:   1 * time.Second,
 		Url:     server.URL,
 	}
@@ -266,10 +267,10 @@ func TestAnalyze_NilClient(t *testing.T) {
 	}))
 	defer server.Close()
 
-	options := Options{
+	options := models.Options{
 		Client:  nil, // Nil client will cause panic
 		Retries: 3,
-		Depths:  2,
+		Depth:   2,
 		Delay:   1 * time.Second,
 		Url:     server.URL,
 	}
@@ -285,10 +286,10 @@ func TestAnalyze_NilClient(t *testing.T) {
 }
 
 func TestAnalyze_EmptyURL(t *testing.T) {
-	options := Options{
+	options := models.Options{
 		Client:  &http.Client{},
 		Retries: 3,
-		Depths:  2,
+		Depth:   2,
 		Delay:   1 * time.Second,
 		Url:     "",
 	}
@@ -312,10 +313,10 @@ func TestAnalyze_Integration(t *testing.T) {
 	}))
 	defer server.Close()
 
-	options := Options{
+	options := models.Options{
 		Client:  &http.Client{Timeout: 10 * time.Second},
 		Retries: 2,
-		Depths:  1,
+		Depth:   1,
 		Delay:   100 * time.Millisecond,
 		Url:     server.URL,
 	}
@@ -360,10 +361,10 @@ func TestAnalyze_TransportError(t *testing.T) {
 		Transport: errorRoundTripper{err: expectedErr},
 	}
 
-	options := Options{
+	options := models.Options{
 		Client:  client,
 		Retries: 3,
-		Depths:  2,
+		Depth:   2,
 		Delay:   1 * time.Second,
 		Url:     "http://example.com",
 	}
@@ -401,10 +402,10 @@ func TestAnalyze_TableDriven(t *testing.T) {
 			}))
 			defer server.Close()
 
-			options := Options{
+			options := models.Options{
 				Client:  &http.Client{Timeout: 10 * time.Second},
 				Retries: 3,
-				Depths:  2,
+				Depth:   2,
 				Delay:   1 * time.Second,
 				Url:     server.URL,
 			}
@@ -428,10 +429,10 @@ func TestAnalyze_ReportJSONStructure(t *testing.T) {
 	}))
 	defer server.Close()
 
-	options := Options{
+	options := models.Options{
 		Client:  &http.Client{Timeout: 10 * time.Second},
 		Retries: 3,
-		Depths:  2,
+		Depth:   2,
 		Delay:   1 * time.Second,
 		Url:     server.URL,
 	}
@@ -451,8 +452,8 @@ func TestAnalyze_ReportJSONStructure(t *testing.T) {
 		t.Errorf("RootUrl mismatch: got %s, want %s", report.RootUrl, server.URL)
 	}
 
-	if report.Depth != options.Depths {
-		t.Errorf("Depth mismatch: got %d, want %d", report.Depth, options.Depths)
+	if report.Depth != options.Depth {
+		t.Errorf("Depth mismatch: got %d, want %d", report.Depth, options.Depth)
 	}
 
 	if report.GeneratedAt.IsZero() {
@@ -485,10 +486,10 @@ func TestAnalyze_JSONFormatting(t *testing.T) {
 	}))
 	defer server.Close()
 
-	options := Options{
+	options := models.Options{
 		Client:  &http.Client{Timeout: 10 * time.Second},
 		Retries: 3,
-		Depths:  2,
+		Depth:   2,
 		Delay:   1 * time.Second,
 		Url:     server.URL,
 	}
